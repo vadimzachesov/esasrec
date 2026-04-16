@@ -82,6 +82,9 @@ def parse_args():
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--save_dir', type=str, default='checkpoints')
 
+    parser.add_argument('--pretrain_path', type=str, default=None,
+                        help='Путь к предобученным весам для инициализации модели')
+
     return parser.parse_args()
 
 
@@ -148,14 +151,20 @@ def main():
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
+    if args.pretrain_path and os.path.exists(args.pretrain_path):
+        print(f"\n[StackRec] Загрузка весов из: {args.pretrain_path}")
+        state_dict = torch.load(args.pretrain_path, map_location=device)
+        model.load_state_dict(state_dict)
+        print("[StackRec] Веса успешно загружены")
+
     os.makedirs(args.save_dir, exist_ok=True)
     best_path = os.path.join(args.save_dir, 'best_model.pt')
     best_ndcg = -1.0
     epochs_no_improve = 0
 
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("Starting training...")
-    print(f"{'='*70}\n")
+    print(f"{'=' * 70}\n")
 
     start_time = time.time()
 
@@ -196,12 +205,12 @@ def main():
             break
 
     total_time = time.time() - start_time
-    print(f"\nTotal training time: {total_time:.1f}s ({total_time/60:.1f}min)")
+    print(f"\nTotal training time: {total_time:.1f}s ({total_time / 60:.1f}min)")
     print(f"Best validation NDCG@10: {best_ndcg:.4f}")
 
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("Final evaluation on test set (full-catalog ranking)...")
-    print(f"{'='*70}\n")
+    print(f"{'=' * 70}\n")
 
     model.load_state_dict(torch.load(best_path, map_location=device))
 
@@ -220,9 +229,9 @@ def main():
     for name, value in val_final.items():
         print(f"  {name}: {value:.4f}")
 
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("Done!")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
 
 
 if __name__ == '__main__':

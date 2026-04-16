@@ -53,6 +53,8 @@ class SASRec(nn.Module):
 
         self.apply(self._init_weights)
 
+        self.alphas = nn.ParameterList([nn.Parameter(torch.zeros(1)) for _ in range(num_blocks)])
+
     def _init_weights(self, module):
         if isinstance(module, (nn.Linear, nn.Conv1d)):
             module.weight.data.normal_(mean=0.0, std=self.initializer_range)
@@ -65,6 +67,26 @@ class SASRec(nn.Module):
         elif isinstance(module, nn.LayerNorm):
             module.bias.data.zero_()
             module.weight.data.fill_(1.0)
+
+    def stack_weights_adjacent(old_state_dict, new_model_num_blocks):
+        new_state_dict = {}
+        old_num_blocks = new_model_num_blocks // 2
+
+        for key, weight in old_state_dict.items():
+            if 'emb' in key or 'last_layernorm' in key:
+                new_state_dict[key] = weight
+
+            elif 'layers' in key or 'layernorms' in key or 'alphas' in key:
+                parts = key.split('.')
+                block_idx = int(parts[1])
+
+                new_key_1 = key.replace(f'.{block_idx}.', f'.{2 * block_idx}.')
+                new_key_2 = key.replace(f'.{block_idx}.', f'.{2 * block_idx + 1}.')
+
+                new_state_dict[new_key_1] = weight.clone()
+                new_state_dict[new_key_2] = weight.clone()
+
+        return new_state_dict
 
     def forward(self, input_ids):
         seqs = self.item_emb(input_ids)
@@ -84,7 +106,7 @@ class SASRec(nn.Module):
             seqs_t = seqs.transpose(0, 1)
             Q = self.attention_layernorms[i](seqs_t)
             mha_out, _ = self.attention_layers[i](Q, seqs_t, seqs_t, attn_mask=attn_mask)
-            seqs_t = Q + mha_out
+            seqs_t = Q + self.alphas[i] * mha_out # Residual Connection
             seqs = seqs_t.transpose(0, 1)
 
             seqs = self.forward_layernorms[i](seqs)
