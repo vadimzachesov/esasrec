@@ -44,7 +44,6 @@ def stack_model_weights(old_path, new_path, method='adjacent'):
             else:
                 new_state_dict[key2] = value.clone()
         else:
-            # Эмбеддинги и last_layernorm переносятся без изменений
             new_state_dict[key] = value.clone()
 
     torch.save(new_state_dict, new_path)

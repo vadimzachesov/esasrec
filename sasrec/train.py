@@ -6,6 +6,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from torch.amp import autocast, GradScaler
+
 from sasrec.model import SASRec
 from sasrec.data import (
     download_and_preprocess,
@@ -24,26 +26,30 @@ def train_one_epoch(model, dataloader, optimizer, device, loss_type='cross_entro
     total_loss = 0.0
     num_batches = 0
 
+    scaler = GradScaler('cuda')
+
     for batch in dataloader:
         input_ids = batch['input_ids'].to(device)
         labels = batch['labels'].to(device)
 
         optimizer.zero_grad()
 
-        if use_sampling:
-            hidden = model(input_ids)
-            negatives = batch['negatives'].to(device)
-            if loss_type == 'cross_entropy':
-                loss = compute_sampled_ce_loss(hidden, labels, negatives, model.item_emb)
+        with autocast('cuda'):
+            if use_sampling:
+                hidden = model(input_ids)
+                negatives = batch['negatives'].to(device)
+                if loss_type == 'cross_entropy':
+                    loss = compute_sampled_ce_loss(hidden, labels, negatives, model.item_emb)
+                else:
+                    loss = compute_sampled_bce_loss(hidden, labels, negatives, model.item_emb)
             else:
-                loss = compute_sampled_bce_loss(hidden, labels, negatives, model.item_emb)
-        else:
-            hidden = model(input_ids)
-            logits = torch.matmul(hidden, model.item_emb.weight.T)
-            loss = compute_full_softmax_loss(logits, labels)
+                hidden = model(input_ids)
+                logits = torch.matmul(hidden, model.item_emb.weight.T)
+                loss = compute_full_softmax_loss(logits, labels)
 
-        loss.backward()
-        optimizer.step()
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
 
         total_loss += loss.item()
         num_batches += 1
