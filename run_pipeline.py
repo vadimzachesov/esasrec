@@ -10,18 +10,18 @@ from datetime import datetime
 DATASET_PATH = "../../data/ml-20m.txt"
 
 # 1. Сначала честно обучаем (или вспоминаем) за сколько сходится модель
-KNOWN_CONVERGENCE_EPOCHS = 31  # ВПИШИ СЮДА то, за сколько у тебя сошелся бейзлайн
+KNOWN_CONVERGENCE_EPOCHS = 68  # ВПИШИ СЮДА то, за сколько у тебя сошелся бейзлайн
 FRACTION = 0.3  # Доля для прогрева (от 1/8 до 1/3 по статье)
 
 # 2. Лимит для самой последней, глубокой модели (даем ей сойтись до конца)
 MAX_FINAL_EPOCHS = 100
 
 # Оптимизации для A100 (Оставлены для скорости)
-HIDDEN_UNITS = 64
-MAX_LENGTH = 20
+HIDDEN_UNITS = 256
+MAX_LENGTH = 100
 BATCH_SIZE = "256"
 
-DEPTHS = [3, 6, 12, 24]
+DEPTHS = [2, 4, 8, 16]
 
 BASE_AUTOPILOT_DIR = "autopilot_experiments"
 TIMESTAMP = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -88,6 +88,8 @@ def main():
             "--max_length", str(MAX_LENGTH),
             "--max_epochs", str(epochs),
             "--batch_size", BATCH_SIZE,
+            "--lr", "0.0001",
+            "--patience", "10",
             "--save_dir", save_dir
         ]
 

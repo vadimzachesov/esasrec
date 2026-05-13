@@ -1,5 +1,0 @@
-usage: eval.py [-h] --data_path DATA_PATH --model_path MODEL_PATH
-               [--maxlen MAXLEN] [--hidden_units HIDDEN_UNITS]
-               [--num_blocks NUM_BLOCKS] [--num_heads NUM_HEADS]
-               [--dropout_rate DROPOUT_RATE] [--device DEVICE]
-eval.py: error: unrecognized arguments: --max_length 20

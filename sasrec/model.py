@@ -5,19 +5,23 @@ import torch.nn as nn
 class PointWiseFeedForward(nn.Module):
     def __init__(self, hidden_units, dropout_rate):
         super().__init__()
-        self.conv1 = nn.Conv1d(hidden_units, hidden_units, kernel_size=1)
+        # ИСПРАВЛЕНО: Заменили Conv1d на Linear, чтобы убить лишние transpose(-1, -2).
+        # Видеокарта скажет спасибо.
+        self.conv1 = nn.Linear(hidden_units, hidden_units)
         self.dropout1 = nn.Dropout(p=dropout_rate)
         self.relu = nn.ReLU()
-        self.conv2 = nn.Conv1d(hidden_units, hidden_units, kernel_size=1)
+        # ИСПРАВЛЕНО: Аналогично
+        self.conv2 = nn.Linear(hidden_units, hidden_units)
         self.dropout2 = nn.Dropout(p=dropout_rate)
 
     def forward(self, inputs):
-        outputs = self.conv1(inputs.transpose(-1, -2))
+        # ИСПРАВЛЕНО: Убраны transpose, так как используем Linear
+        outputs = self.conv1(inputs)
         outputs = self.relu(self.dropout1(outputs))
         outputs = self.conv2(outputs)
         outputs = self.dropout2(outputs)
-        outputs = outputs.transpose(-1, -2)
-        outputs += inputs
+        # ИСПРАВЛЕНО: Убрано сложение (outputs += inputs) отсюда.
+        # Оно перенесено в основной цикл, чтобы не складывать с нормализованным входом.
         return outputs
 
 
@@ -46,8 +50,9 @@ class SASRec(nn.Module):
 
         for _ in range(num_blocks):
             self.attention_layernorms.append(nn.LayerNorm(hidden_units, eps=1e-8))
+            # ИСПРАВЛЕНО: Добавлен batch_first=True, чтобы не делать transpose(0, 1) в цикле
             self.attention_layers.append(
-                nn.MultiheadAttention(hidden_units, num_heads, dropout_rate))
+                nn.MultiheadAttention(hidden_units, num_heads, dropout_rate, batch_first=True))
             self.forward_layernorms.append(nn.LayerNorm(hidden_units, eps=1e-8))
             self.forward_layers.append(PointWiseFeedForward(hidden_units, dropout_rate))
 
@@ -56,7 +61,8 @@ class SASRec(nn.Module):
         self.alphas = nn.ParameterList([nn.Parameter(torch.zeros(1)) for _ in range(num_blocks)])
 
     def _init_weights(self, module):
-        if isinstance(module, (nn.Linear, nn.Conv1d)):
+        # ИСПРАВЛЕНО: Убран nn.Conv1d из проверки, так как теперь везде Linear
+        if isinstance(module, nn.Linear):
             module.weight.data.normal_(mean=0.0, std=self.initializer_range)
             if module.bias is not None:
                 module.bias.data.zero_()
@@ -103,14 +109,22 @@ class SASRec(nn.Module):
         attn_mask = ~torch.tril(torch.ones((tl, tl), dtype=torch.bool, device=seqs.device))
 
         for i in range(self.num_blocks):
-            seqs_t = seqs.transpose(0, 1)
-            Q = self.attention_layernorms[i](seqs_t)
-            mha_out, _ = self.attention_layers[i](Q, seqs_t, seqs_t, attn_mask=attn_mask)
-            seqs_t = Q + self.alphas[i] * mha_out # Residual Connection
-            seqs = seqs_t.transpose(0, 1)
+            # ИСПРАВЛЕНО: Убрали transpose(0,1), так как теперь batch_first=True
+            # ИСПРАВЛЕНО: LayerNorm применяется к копии (Q), чтобы оригинальный seqs прошел чистым
+            Q = self.attention_layernorms[i](seqs)
 
-            seqs = self.forward_layernorms[i](seqs)
-            seqs = self.forward_layers[i](seqs)
+            # ИСПРАВЛЕНО: В MultiheadAttention передаем нормализованный Q
+            mha_out, _ = self.attention_layers[i](Q, Q, Q, attn_mask=attn_mask)
+
+            # ИСПРАВЛЕНО: Residual Connection складывается с оригинальным (не нормализованным) seqs
+            seqs = seqs + self.alphas[i] * mha_out
+
+            # ИСПРАВЛЕНО: Аналогичный фикс для FFN. Нормализуем копию...
+            seqs_norm = self.forward_layernorms[i](seqs)
+            ffn_out = self.forward_layers[i](seqs_norm)
+
+            # ИСПРАВЛЕНО: ...а результат складываем с оригинальным seqs
+            seqs = seqs + ffn_out
 
             seqs = seqs * (~timeline_mask).unsqueeze(-1).float()
 

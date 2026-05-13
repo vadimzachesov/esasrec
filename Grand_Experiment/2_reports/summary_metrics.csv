@@ -1,0 +1,21 @@
+Этап,Log File,Test HR@10,Test NDCG@10
+3_baseline_best,log_16b.txt,0.3367,0.2094
+embeds,log_1024e.txt,0.1946,0.1147
+embeds,log_128e.txt,0.2828,0.169
+embeds,log_64e.txt,0.2489,0.1453
+embeds,log_512e.txt,0.32,0.1978
+embeds,log_256e.txt,0.304,0.1856
+length,log_50l.txt,0.2897,0.1757
+length,log_25l.txt,0.2747,0.1669
+length,log_200l.txt,0.3101,0.1892
+length,log_300l.txt,0.3091,0.1888
+length,log_100l.txt,0.304,0.1856
+depth,log_24b.txt,0.329,0.2045
+depth,log_16b.txt,0.3243,0.2018
+depth,log_2b.txt,0.2845,0.1725
+depth,log_4b.txt,0.304,0.1856
+depth,log_8b.txt,0.3166,0.1952
+4_stackrec_progressive,log_16b.txt,0.3411,0.2144
+4_stackrec_progressive,log_2b.txt,0.2823,0.17
+4_stackrec_progressive,log_4b.txt,0.3101,0.1902
+4_stackrec_progressive,log_8b.txt,0.3272,0.2029

@@ -1,0 +1,62 @@
+======================================================================
+SASRec+ Training Script
+======================================================================
+
+Config:
+  data_path: ../../data/ml-20m.txt
+  dataset: ml-20m
+  data_dir: data
+  hidden_units: 256
+  num_blocks: 4
+  num_heads: 4
+  dropout_rate: 0.2
+  max_length: 400
+  loss: cross_entropy
+  num_negatives: None
+  full_negative_sampling: False
+  batch_size: 256
+  lr: 0.001
+  max_epochs: 100
+  patience: 10
+  val_size: 10000
+  top_k: [10]
+  device: cuda
+  num_workers: 4
+  seed: 42
+  save_dir: ./Grand_Experiment/1_ablation/length/chk_400
+  pretrain_path: None
+
+Using device: cuda
+Loading data from ../../data/ml-20m.txt...
+  Users: 138,493
+  Items: 26,744
+  Interactions: 20,000,263
+  Avg seq length: 144.4
+  Train users: 138,493
+  Val users:   138,493
+  Test users:  138,493
+
+Model parameters: 8,532,740
+
+======================================================================
+Starting training...
+======================================================================
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/usr/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/home/PhantomHaterGrind/zchvma/SASRec/workspace/esasrec/sasrec/train.py", line 244, in <module>
+    main()
+  File "/home/PhantomHaterGrind/zchvma/SASRec/workspace/esasrec/sasrec/train.py", line 180, in main
+    avg_loss = train_one_epoch(
+  File "/home/PhantomHaterGrind/zchvma/SASRec/workspace/esasrec/sasrec/train.py", line 50, in train_one_epoch
+    scaler.scale(loss).backward()
+  File "/usr/local/lib/python3.10/dist-packages/torch/_tensor.py", line 581, in backward
+    torch.autograd.backward(
+  File "/usr/local/lib/python3.10/dist-packages/torch/autograd/__init__.py", line 347, in backward
+    _engine_run_backward(
+  File "/usr/local/lib/python3.10/dist-packages/torch/autograd/graph.py", line 825, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 10.20 GiB. GPU 0 has a total capacity of 79.25 GiB of which 1.69 GiB is free. Process 4079367 has 1.73 GiB memory in use. Process 4089825 has 1.73 GiB memory in use. Process 1445160 has 6.45 GiB memory in use. Process 1513108 has 27.48 GiB memory in use. Process 3364761 has 726.00 MiB memory in use. Including non-PyTorch memory, this process has 39.44 GiB memory in use. Of the allocated memory 27.82 GiB is allocated by PyTorch, and 11.12 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

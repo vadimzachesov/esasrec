@@ -1,0 +1,106 @@
+======================================================================
+SASRec+ Training Script
+======================================================================
+
+Config:
+  data_path: ../../data/ml-20m.txt
+  dataset: ml-20m
+  data_dir: data
+  hidden_units: 4096
+  num_blocks: 2
+  num_heads: 1
+  dropout_rate: 0.1
+  max_length: 50
+  loss: cross_entropy
+  num_negatives: None
+  full_negative_sampling: False
+  batch_size: 256
+  lr: 0.001
+  max_epochs: 40
+  patience: 5
+  val_size: 10000
+  top_k: [10]
+  device: cuda
+  num_workers: 4
+  seed: 42
+  save_dir: benchmark_results/02_embeds/hidden_units_4096
+  pretrain_path: None
+
+Using device: cuda
+Loading data from ../../data/ml-20m.txt...
+  Users: 138,493
+  Items: 26,744
+  Interactions: 20,000,263
+  Avg seq length: 144.4
+  Train users: 138,493
+  Val users:   138,493
+  Test users:  138,493
+
+Model parameters: 311,169,026
+
+======================================================================
+Starting training...
+======================================================================
+
+  Evaluated 256/10000 users...
+Epoch   1/40 | Loss: nan | Val HR@10: 0.0302 | Val NDCG@10: 0.0155 | Time: 186.6s * (saved)
+  Evaluated 256/10000 users...
+Epoch   2/40 | Loss: nan | Val HR@10: 0.0315 | Val NDCG@10: 0.0164 | Time: 194.5s * (saved)
+  Evaluated 256/10000 users...
+Epoch   3/40 | Loss: nan | Val HR@10: 0.0307 | Val NDCG@10: 0.0148 | Time: 186.0s
+  Evaluated 256/10000 users...
+Epoch   4/40 | Loss: nan | Val HR@10: 0.0283 | Val NDCG@10: 0.0149 | Time: 196.2s
+  Evaluated 256/10000 users...
+Epoch   5/40 | Loss: nan | Val HR@10: 0.0295 | Val NDCG@10: 0.0151 | Time: 199.4s
+  Evaluated 256/10000 users...
+Epoch   6/40 | Loss: nan | Val HR@10: 0.0299 | Val NDCG@10: 0.0151 | Time: 202.0s
+  Evaluated 256/10000 users...
+/home/PhantomHaterGrind/zchvma/SASRec/workspace/esasrec/sasrec/train.py:221: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  model.load_state_dict(torch.load(best_path, map_location=device))
+Epoch   7/40 | Loss: nan | Val HR@10: 0.0295 | Val NDCG@10: 0.0152 | Time: 205.3s
+
+Early stopping at epoch 7 (patience=5)
+
+Total training time: 1477.9s (24.6min)
+Best validation NDCG@10: 0.0164
+
+======================================================================
+Final evaluation on test set (full-catalog ranking)...
+======================================================================
+
+
+--- Test metrics @10 ---
+  Evaluated 256/138493 users...
+  Evaluated 13056/138493 users...
+  Evaluated 25856/138493 users...
+  Evaluated 38656/138493 users...
+  Evaluated 51456/138493 users...
+  Evaluated 64256/138493 users...
+  Evaluated 77056/138493 users...
+  Evaluated 89856/138493 users...
+  Evaluated 102656/138493 users...
+  Evaluated 115456/138493 users...
+  Evaluated 128256/138493 users...
+  HR@10: 0.0318
+  NDCG@10: 0.0161
+  MRR@10: 0.0114
+
+--- Validation metrics @10 (best model) ---
+  Evaluated 256/138493 users...
+  Evaluated 13056/138493 users...
+  Evaluated 25856/138493 users...
+  Evaluated 38656/138493 users...
+  Evaluated 51456/138493 users...
+  Evaluated 64256/138493 users...
+  Evaluated 77056/138493 users...
+  Evaluated 89856/138493 users...
+  Evaluated 102656/138493 users...
+  Evaluated 115456/138493 users...
+  Evaluated 128256/138493 users...
+  HR@10: 0.0293
+  NDCG@10: 0.0148
+  MRR@10: 0.0105
+
+======================================================================
+Done!
+======================================================================

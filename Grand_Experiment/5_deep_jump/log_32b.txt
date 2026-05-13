@@ -1,0 +1,65 @@
+/home/PhantomHaterGrind/zchvma/SASRec/workspace/esasrec/sasrec/train.py:162: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  state_dict = torch.load(args.pretrain_path, map_location=device)
+======================================================================
+SASRec+ Training Script
+======================================================================
+
+Config:
+  data_path: ../../data/ml-20m.txt
+  dataset: ml-20m
+  data_dir: data
+  hidden_units: 512
+  num_blocks: 32
+  num_heads: 4
+  dropout_rate: 0.2
+  max_length: 200
+  loss: cross_entropy
+  num_negatives: None
+  full_negative_sampling: False
+  batch_size: 256
+  lr: 0.001
+  max_epochs: 100
+  patience: 10
+  val_size: 10000
+  top_k: [10]
+  device: cuda
+  num_workers: 4
+  seed: 42
+  save_dir: ./Grand_Experiment/5_deep_jump/chk_32b
+  pretrain_path: ./Grand_Experiment/5_deep_jump/stacked_32b.pt
+
+Using device: cuda
+Loading data from ../../data/ml-20m.txt...
+  Users: 138,493
+  Items: 26,744
+  Interactions: 20,000,263
+  Avg seq length: 144.4
+  Train users: 138,493
+  Val users:   138,493
+  Test users:  138,493
+
+Model parameters: 64,292,384
+
+[StackRec] Загрузка весов из: ./Grand_Experiment/5_deep_jump/stacked_32b.pt
+[StackRec] Веса успешно загружены
+
+======================================================================
+Starting training...
+======================================================================
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/usr/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/home/PhantomHaterGrind/zchvma/SASRec/workspace/esasrec/sasrec/train.py", line 244, in <module>
+    main()
+  File "/home/PhantomHaterGrind/zchvma/SASRec/workspace/esasrec/sasrec/train.py", line 180, in main
+    avg_loss = train_one_epoch(
+  File "/home/PhantomHaterGrind/zchvma/SASRec/workspace/esasrec/sasrec/train.py", line 48, in train_one_epoch
+    loss = compute_full_softmax_loss(logits, labels)
+  File "/home/PhantomHaterGrind/zchvma/SASRec/workspace/esasrec/sasrec/losses.py", line 54, in compute_full_softmax_loss
+    return F.cross_entropy(logits.view(-1, logits.size(-1)), labels.view(-1), ignore_index=-100)
+  File "/usr/local/lib/python3.10/dist-packages/torch/nn/functional.py", line 3479, in cross_entropy
+    return torch._C._nn.cross_entropy_loss(
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 5.10 GiB. GPU 0 has a total capacity of 79.25 GiB of which 2.24 GiB is free. Process 4079367 has 1.73 GiB memory in use. Process 4089825 has 1.73 GiB memory in use. Process 1445160 has 6.45 GiB memory in use. Process 1513108 has 27.48 GiB memory in use. Process 3364761 has 726.00 MiB memory in use. Including non-PyTorch memory, this process has 38.89 GiB memory in use. Of the allocated memory 36.44 GiB is allocated by PyTorch, and 1.96 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

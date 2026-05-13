@@ -1,0 +1,19 @@
+Thread,Parameter,Value,Test HR@10,Test NDCG@10,Log File
+01_depth,--num_blocks,2,0.238,0.1393,benchmark_results/01_depth/log_num_blocks_2.txt
+01_depth,--num_blocks,4,0.2488,0.1464,benchmark_results/01_depth/log_num_blocks_4.txt
+01_depth,--num_blocks,8,0.2603,0.1544,benchmark_results/01_depth/log_num_blocks_8.txt
+01_depth,--num_blocks,16,0.2698,0.1614,benchmark_results/01_depth/log_num_blocks_16.txt
+01_depth,--num_blocks,24,0.2738,0.1649,benchmark_results/01_depth/log_num_blocks_24.txt
+02_embeds,--hidden_units,64,0.238,0.1393,benchmark_results/02_embeds/log_hidden_units_64.txt
+02_embeds,--hidden_units,128,0.2596,0.1553,benchmark_results/02_embeds/log_hidden_units_128.txt
+02_embeds,--hidden_units,256,0.2765,0.1683,benchmark_results/02_embeds/log_hidden_units_256.txt
+02_embeds,--hidden_units,512,0.1949,0.1166,benchmark_results/02_embeds/log_hidden_units_512.txt
+02_embeds,--hidden_units,1024,1.0,1.0,benchmark_results/02_embeds/log_hidden_units_1024.txt
+02_embeds,--hidden_units,4096,0.0318,0.0161,benchmark_results/02_embeds/log_hidden_units_4096.txt
+03_context,--max_length,25,0.2336,0.1373,benchmark_results/03_context/log_max_length_25.txt
+03_context,--max_length,50,0.238,0.1393,benchmark_results/03_context/log_max_length_50.txt
+03_context,--max_length,100,0.2396,0.1408,benchmark_results/03_context/log_max_length_100.txt
+03_context,--max_length,200,0.2398,0.1399,benchmark_results/03_context/log_max_length_200.txt
+03_context,--max_length,300,0.2408,0.1407,benchmark_results/03_context/log_max_length_300.txt
+03_context,--max_length,400,0.2415,0.1406,benchmark_results/03_context/log_max_length_400.txt
+04_additional_depth,--num_blocks,32,0.2788,0.1674,benchmark_results/04_additional_depth/log_num_blocks_32.txt

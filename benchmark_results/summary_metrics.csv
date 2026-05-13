@@ -1,0 +1,2 @@
+Thread,Parameter,Value,Test HR@10,Test NDCG@10,Log File
+04_additional_depth,--num_blocks,32,0.2788,0.1674,benchmark_results/04_additional_depth/log_num_blocks_32.txt
