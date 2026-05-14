@@ -26,10 +26,10 @@ for root, dirs, files in os.walk(ROOT_DIR):
             epochs, losses, hrs, ndcgs = [], [], [], []
             test_hr, test_ndcg = "N/A", "N/A"
 
+            # Парсинг
             with open(log_path, 'r', encoding='utf-8') as f:
                 content = f.read()
 
-                # Парсим эпохи (Loss, HR, NDCG)
                 pattern = r'Epoch\s+(\d+)/\d+\s+\|\s+Loss:\s+([\d\.]+)\s+\|\s+Val HR@10:\s+([\d\.]+)\s+\|\s+Val NDCG@10:\s+([\d\.]+)'
                 for match in re.finditer(pattern, content):
                     epochs.append(int(match.group(1)))
@@ -37,7 +37,6 @@ for root, dirs, files in os.walk(ROOT_DIR):
                     hrs.append(float(match.group(3)))
                     ndcgs.append(float(match.group(4)))
 
-                # Парсим финальные метрики на тесте
                 test_sec = content.split('--- Test metrics @10 ---')
                 if len(test_sec) > 1:
                     ndcg_m = re.search(r'NDCG@10:\s+([\d\.]+)', test_sec[1])
@@ -55,7 +54,7 @@ for root, dirs, files in os.walk(ROOT_DIR):
                 # Добавляем данные для итогового CSV
                 summary_data.append([root.split('/')[-1], file, test_hr, test_ndcg])
 
-                # 2. Рисуем и сохраняем красивые графики (.png)
+                # 2. Графики
                 plt.figure(figsize=(12, 5))
 
                 # График Loss
@@ -86,7 +85,6 @@ for root, dirs, files in os.walk(ROOT_DIR):
 if summary_data:
     summary_df = pd.DataFrame(summary_data, columns=["Этап", "Log File", "Test HR@10", "Test NDCG@10"])
 
-    # Пытаемся отсортировать, чтобы красивые итоговые метрики были внизу
     summary_df.to_csv(SUMMARY_FILE, index=False)
     print(f"\n🏆 Сводный файл сохранен в: {SUMMARY_FILE}")
 else:

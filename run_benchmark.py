@@ -9,31 +9,26 @@ BASE_DIR = "benchmark_results"
 SUMMARY_FILE = os.path.join(BASE_DIR, "summary_metrics.csv")
 
 # Базовые параметры
-BASE_EPOCHS = "40"
+BASE_EPOCHS = "100"
 BASE_PATIENCE = "5"
 BATCH_SIZE = "256"
 
 # План исследований
 EXPERIMENTS = {
-    # "01_depth": {
-    #     "param_name": "--num_blocks",
-    #     "values": [2, 4, 8, 16, 24],
-    #     "constants": {"--hidden_units": "64", "--max_length": "50"}
-    # },
-    # "02_embeds": {
-    #     "param_name": "--hidden_units",
-    #     "values": [64, 128, 256, 512, 1024, 4096],
-    #     "constants": {"--num_blocks": "2", "--max_length": "50"}
-    # },
-    # "03_context": {
-    #     "param_name": "--max_length",
-    #     "values": [25, 50, 100, 200, 300, 400],
-    #     "constants": {"--num_blocks": "2", "--hidden_units": "64"}
-    # }
-    "04_additional_depth": {
+    "01_depth": {
         "param_name": "--num_blocks",
-        "values": [32, 40, 48],
+        "values": [2, 4, 8, 16, 24],
         "constants": {"--hidden_units": "64", "--max_length": "50"}
+    },
+    "02_embeds": {
+        "param_name": "--hidden_units",
+        "values": [64, 128, 256, 512, 1024, 4096],
+        "constants": {"--num_blocks": "2", "--max_length": "50"}
+    },
+    "03_context": {
+        "param_name": "--max_length",
+        "values": [25, 50, 100, 200, 300, 400],
+        "constants": {"--num_blocks": "2", "--hidden_units": "64"}
     }
 }
 
@@ -46,7 +41,6 @@ def parse_and_extract_history(log_path, history_csv_path):
     if not os.path.exists(log_path):
         return hr, ndcg
 
-    # Регулярка для вытаскивания данных из строки (Loss, HR, NDCG)
     epoch_pattern = re.compile(
         r"Epoch\s+(\d+)/\d+\s+\|\s+Loss:\s+([0-9.]+)\s+\|\s+Val HR@10:\s+([0-9.]+)\s+\|\s+Val NDCG@10:\s+([0-9.]+)")
 
@@ -77,7 +71,7 @@ def parse_and_extract_history(log_path, history_csv_path):
 
 
 def main():
-    os.makedirs(BASE_DIR, exist_ok=True)  # Магия: папки создаются сами!
+    os.makedirs(BASE_DIR, exist_ok=True)
 
     with open(SUMMARY_FILE, mode='w', newline='') as f:
         writer = csv.writer(f)
@@ -95,7 +89,6 @@ def main():
             run_name = f"{param_flag.strip('--')}_{val_str}"
             run_dir = os.path.join(thread_dir, run_name)
 
-            # Файлы, которые скрипт создаст для этой модели
             log_file = os.path.join(thread_dir, f"log_{run_name}.txt")
             history_file = os.path.join(thread_dir, f"learning_curve_{run_name}.csv")
 
@@ -114,7 +107,6 @@ def main():
             for k, v in config["constants"].items():
                 cmd.extend([k, v])
 
-            # Запускаем скрипт
             with open(log_file, "w", encoding="utf-8") as f:
                 process = subprocess.Popen(cmd, stdout=f, stderr=subprocess.STDOUT)
                 process.wait()
@@ -123,7 +115,6 @@ def main():
                 print(f"❌ Ошибка/OOM при запуске {run_name}.")
                 hr, ndcg = "OOM/Error", "OOM/Error"
             else:
-                # ВОТ ЗДЕСЬ мы парсим и сохраняем данные для графиков!
                 hr, ndcg = parse_and_extract_history(log_file, history_file)
                 print(f"✅ Готово! HR@10: {hr}, NDCG@10: {ndcg}")
 

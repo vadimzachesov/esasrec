@@ -5,23 +5,17 @@ import torch.nn as nn
 class PointWiseFeedForward(nn.Module):
     def __init__(self, hidden_units, dropout_rate):
         super().__init__()
-        # ИСПРАВЛЕНО: Заменили Conv1d на Linear, чтобы убить лишние transpose(-1, -2).
-        # Видеокарта скажет спасибо.
         self.conv1 = nn.Linear(hidden_units, hidden_units)
         self.dropout1 = nn.Dropout(p=dropout_rate)
         self.relu = nn.ReLU()
-        # ИСПРАВЛЕНО: Аналогично
         self.conv2 = nn.Linear(hidden_units, hidden_units)
         self.dropout2 = nn.Dropout(p=dropout_rate)
 
     def forward(self, inputs):
-        # ИСПРАВЛЕНО: Убраны transpose, так как используем Linear
         outputs = self.conv1(inputs)
         outputs = self.relu(self.dropout1(outputs))
         outputs = self.conv2(outputs)
         outputs = self.dropout2(outputs)
-        # ИСПРАВЛЕНО: Убрано сложение (outputs += inputs) отсюда.
-        # Оно перенесено в основной цикл, чтобы не складывать с нормализованным входом.
         return outputs
 
 
@@ -61,7 +55,6 @@ class SASRec(nn.Module):
         self.alphas = nn.ParameterList([nn.Parameter(torch.zeros(1)) for _ in range(num_blocks)])
 
     def _init_weights(self, module):
-        # ИСПРАВЛЕНО: Убран nn.Conv1d из проверки, так как теперь везде Linear
         if isinstance(module, nn.Linear):
             module.weight.data.normal_(mean=0.0, std=self.initializer_range)
             if module.bias is not None:
@@ -109,21 +102,15 @@ class SASRec(nn.Module):
         attn_mask = ~torch.tril(torch.ones((tl, tl), dtype=torch.bool, device=seqs.device))
 
         for i in range(self.num_blocks):
-            # ИСПРАВЛЕНО: Убрали transpose(0,1), так как теперь batch_first=True
-            # ИСПРАВЛЕНО: LayerNorm применяется к копии (Q), чтобы оригинальный seqs прошел чистым
             Q = self.attention_layernorms[i](seqs)
 
-            # ИСПРАВЛЕНО: В MultiheadAttention передаем нормализованный Q
             mha_out, _ = self.attention_layers[i](Q, Q, Q, attn_mask=attn_mask)
 
-            # ИСПРАВЛЕНО: Residual Connection складывается с оригинальным (не нормализованным) seqs
             seqs = seqs + self.alphas[i] * mha_out
 
-            # ИСПРАВЛЕНО: Аналогичный фикс для FFN. Нормализуем копию...
             seqs_norm = self.forward_layernorms[i](seqs)
             ffn_out = self.forward_layers[i](seqs_norm)
 
-            # ИСПРАВЛЕНО: ...а результат складываем с оригинальным seqs
             seqs = seqs + ffn_out
 
             seqs = seqs * (~timeline_mask).unsqueeze(-1).float()

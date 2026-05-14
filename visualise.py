@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import glob
 
-# Настройки стиля
 sns.set_theme(style="whitegrid")
 plt.rcParams.update({'font.size': 12, 'figure.figsize': (10, 6)})
 
@@ -32,7 +31,6 @@ def plot_summary_metrics(summary_csv):
 
         # График NDCG
         plt.figure()
-        # Исправляем FutureWarning: добавляем hue='Value' и legend=False
         sns.barplot(data=thread_df, x='Value', y='Test NDCG@10', hue='Value', palette='viridis', legend=False)
 
         title_param = thread.split('_')[1] if '_' in thread else thread
@@ -57,12 +55,10 @@ def plot_learning_curves():
         if not csv_files:
             continue
 
-        # Сортируем файлы, чтобы легенда была по порядку (например, 2, 4, 8...)
         csv_files.sort()
 
         plt.figure()
         for file in csv_files:
-            # Извлекаем значение параметра из имени файла
             label = os.path.basename(file).replace("learning_curve_", "").replace(".csv", "")
             df = pd.read_csv(file)
             plt.plot(df['Epoch'], df['Val_NDCG_10'], label=label, marker='o', markersize=4)

@@ -4,19 +4,14 @@ import math
 import sys
 from datetime import datetime
 
-# ==========================================
-# НАСТРОЙКИ ПО СТАТЬЕ (СЦЕНАРИЙ TS)
-# ==========================================
 DATASET_PATH = "../../data/ml-20m.txt"
 
-# 1. Сначала честно обучаем (или вспоминаем) за сколько сходится модель
-KNOWN_CONVERGENCE_EPOCHS = 68  # ВПИШИ СЮДА то, за сколько у тебя сошелся бейзлайн
+
+KNOWN_CONVERGENCE_EPOCHS = 68  # Количество эпох схождения бейзлайна
 FRACTION = 0.3  # Доля для прогрева (от 1/8 до 1/3 по статье)
 
-# 2. Лимит для самой последней, глубокой модели (даем ей сойтись до конца)
 MAX_FINAL_EPOCHS = 100
 
-# Оптимизации для A100 (Оставлены для скорости)
 HIDDEN_UNITS = 256
 MAX_LENGTH = 100
 BATCH_SIZE = "256"
@@ -27,16 +22,12 @@ BASE_AUTOPILOT_DIR = "autopilot_experiments"
 TIMESTAMP = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 RUN_DIR = os.path.join(BASE_AUTOPILOT_DIR, TIMESTAMP)
 
-
-# ==========================================
-
 def run_cmd(cmd, log_file=None):
     command_str = ' '.join(cmd)
     print(f"\n🚀 [ЗАПУСК]: {command_str}")
 
     if log_file:
         with open(log_file, "w", encoding="utf-8") as f:
-            # Используем Popen, чтобы читать поток по мере его появления
             process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
@@ -44,7 +35,7 @@ def run_cmd(cmd, log_file=None):
                 text=True,
                 bufsize=1
             )
-            # Пишем и в терминал (sys.stdout), и в файл (f)
+
             for line in process.stdout:
                 sys.stdout.write(line)
                 f.write(line)
@@ -62,7 +53,6 @@ def main():
     os.makedirs(RUN_DIR, exist_ok=True)
     print(f"📁 Директория эксперимента: {RUN_DIR}")
 
-    # Считаем ту самую "правильную долю" по статье
     partial_epochs = math.ceil(KNOWN_CONVERGENCE_EPOCHS * FRACTION)
     print(f"🎯 Математика StackRec: Сходимость = {KNOWN_CONVERGENCE_EPOCHS}, Доля = {FRACTION}")
     print(f"⏳ Прогревочных эпох на каждый промежуточный шаг: {partial_epochs}")
@@ -108,7 +98,6 @@ def main():
             "--maxlen", str(MAX_LENGTH),
         ]
 
-        # Для eval логов тоже дублируем вывод на экран и в файл
         run_cmd(eval_cmd, log_file=eval_log_path)
 
         if not is_final:
